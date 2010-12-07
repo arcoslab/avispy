@@ -103,20 +103,20 @@ plot.scale=[4.,4.,1.0]
 
 
 import PyKDL as kdl
-import lwr
+import robot_desc_example as robot_desc
 
 articulated_right=objects_lib.Articulated(scene)
 articulated_right2=objects_lib.Articulated(scene)
 articulated_left=objects_lib.Articulated(scene)
 articulated_left2=objects_lib.Articulated(scene)
 
-for segment in lwr.arm_segments_right:
+for segment in robot_desc.arm_segments_right:
     gl_segment=objects_lib.Segment(segment)
     articulated_right.add_segment(gl_segment)
     gl_segment=objects_lib.Segment(segment)
     articulated_right2.add_segment(gl_segment)
 
-for segment in lwr.arm_segments_left:
+for segment in robot_desc.arm_segments_left:
     gl_segment=objects_lib.Segment(segment)
     articulated_left.add_segment(gl_segment)
     gl_segment=objects_lib.Segment(segment)
