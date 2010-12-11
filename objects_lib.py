@@ -348,8 +348,20 @@ class Joint(Cylinder):
     
 
 class Frame(_engine.Object_model):
-    def __init__(self,rotation, vector):
+    def __init__(self):
         _engine.Object_model.__init__(self)
+        x_arrow=Arrow()
+        y_arrow=Arrow()
+        z_arrow=Arrow()
+        x_arrow.set_color(_engine.Colors.red)
+        x_arrow.set_axis(_n.array([1.,0,0]))
+        y_arrow.set_color(_engine.Colors.green)
+        y_arrow.set_axis(_n.array([0.,1.0,0]))
+        z_arrow.set_color(_engine.Colors.blue)
+        #z_arrow.set_axis(_n.array([0.,0,1.0]))
+        self.add_object_model(x_arrow)
+        self.add_object_model(y_arrow)
+        self.add_object_model(z_arrow)
 
 class Segment(_engine.Object_model):
     def __init__(self,kdl_segment):
@@ -416,20 +428,31 @@ class Articulated():
     def set_base_frame(self, frame):
         self.trans_rot_matrix=frame
 
-    def add_segment(self, segment):
-        segment.set_width(0.03)
+    def add_segments(self, segments,width=0.03):
+        for segment in segments:
+            self.angles.append(0.0)
+            self.add_segment(Segment(segment),width=width)
+
+    def add_segment(self, segment,width=0.03):
+        segment.set_width(width)
         self.segments.append(segment)
         self.scene.add_object(segment)
         self.angles.append(0.0)
         self.update_transformations()
 
     def set_angles(self, angles):
-        if len(angles)!=len(self.segments):
-            print "Error, wrong number of angles"
-        else:
-            self.angles=angles
-            #update trans_rot_matrices of all segments
-            #self.update_transformations()
+        self.angles=[]
+        for segment in self.segments:
+            if segment.joint_type=="None":
+                self.angles.append(0.0)
+            else:
+                if len(angles)==0:
+                    print "Angle list to small"
+                else:
+                    self.angles.append(angles.pop(0))
+        if len(self.angles)!=len(self.segments):
+            print "Error, wrong number of angles, got", len(self.angles), " should be:", len(self.segments)
+            self.angles=[0.0]*len(self.segments)
 
     def update_transformations(self):
         next_link_trans_rot=self.trans_rot_matrix
