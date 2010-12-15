@@ -381,6 +381,7 @@ class Segment(_engine.Object_model):
 
         #joint
         self.joint_type=kdl_segment.getJoint().getTypeName()
+        self.joint_scale=kdl_segment.getJoint().getScale()
         print "Joint type", self.joint_type
         if self.joint_type!="None":
             print "create cylinder"
@@ -453,7 +454,7 @@ class Articulated():
                 if len(angles)==0:
                     print "Angle list to small"
                 else:
-                    self.angles.append(angles[i])
+                    self.angles.append(angles[i]*segment.joint_scale)
                     i+=1
         if len(self.angles)!=len(self.segments):
             print "Error, wrong number of angles, got", len(self.angles), " should be:", len(self.segments)
