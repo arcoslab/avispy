@@ -442,12 +442,12 @@ class Articulated():
         self.update_transformations()
 
     def set_angles(self, angles):
-        print "Angles", angles
+        #print "Angles", angles
         self.angles=[]
         i=0
         #creating the complete angle list (including None joint angles)
         for segment in self.segments:
-            print segment.joint_type
+            #print segment.joint_type
             if segment.joint_type=="None":
                 self.angles.append(0.0)
             else:

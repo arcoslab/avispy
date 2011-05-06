@@ -1,6 +1,7 @@
 
 import OpenGL.GL as _gl
 import OpenGL.GLU as _glu
+import time
 
 import pygame as _pygame
 import numpy as _n
@@ -325,11 +326,12 @@ class Scene(object):
                 _gl.glPopMatrix()
 
 class Display(object):
-    def __init__(self,camera,scene,res=(320,240)):
+    def __init__(self,camera,scene,res=(320,240),image_dump_dir=""):
         '''Takes a camera and a scene and creates a opengl display of resolution res'''
         self.camera=camera
         self.scene=scene
         self.size=res
+        self.image_dump_dir=image_dump_dir
         _pygame.display.init()
         self.pg_surface=_pygame.display.set_mode(self.size,_pygame.OPENGL| _pygame.DOUBLEBUF)
         #_gl.glViewport(0,0,size[0],size[1])
@@ -395,6 +397,10 @@ class Display(object):
         _gl.glLightfv(_gl.GL_LIGHT0, _gl.GL_POSITION, light_pos)
         _gl.glEnable(_gl.GL_LIGHT0)
         _gl.glEndList()
+
+        #For image capture
+        self.img_cnt=0
+        self.init_time=time.time()
         
         
     def set_scene(self,scene):
@@ -433,6 +439,12 @@ class Display(object):
 
         #update!
         _pygame.display.flip()
+
+        #pixel_data=_gl.glReadPixels(0.,0.,self.size[0],self.size[1],_gl.GL_RGB,type=_gl.GL_UNSIGNED_INT)
+        if self.image_dump_dir!="":
+            filename=self.image_dump_dir+"capture-"+str(self.init_time)+"-%07d.png" % (self.img_cnt)
+            _pygame.image.save(self.pg_surface,filename)
+            self.img_cnt+=1
 
 class Camera_matrix(object):
     #camera model: Its a sphere:
