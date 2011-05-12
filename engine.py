@@ -332,6 +332,11 @@ class Display(object):
         self.scene=scene
         self.size=res
         self.image_dump_dir=image_dump_dir
+        if self.image_dump_dir!="":
+            try:
+                os.mkdir(self.image_dump_dir)
+            except OSError:
+                print "Directory already exists"
         _pygame.display.init()
         self.pg_surface=_pygame.display.set_mode(self.size,_pygame.OPENGL| _pygame.DOUBLEBUF)
         #_gl.glViewport(0,0,size[0],size[1])
