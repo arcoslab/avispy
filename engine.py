@@ -1,7 +1,7 @@
 
 import OpenGL.GL as _gl
 import OpenGL.GLU as _glu
-import time
+import time, os
 
 import pygame as _pygame
 import numpy as _n
