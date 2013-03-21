@@ -7,3 +7,5 @@ install:
 	install __init__.py $(PREFIX)/lib/python/site-packages/vispy
 	cp -r examples/* $(PREFIX)/lib/python/site-packages/vispy/examples
 
+sys-dep:
+	sudo apt-get install python-opengl python-pygame python-numpy
