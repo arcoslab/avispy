@@ -4,8 +4,8 @@ import OpenGL.GL as gl
 
 import sys, pygame
 from numpy import array, identity, cos , sin, dot, invert, pi
-from vispy.engine import Camera, Scene, Light, Display, Primitive, Object_model, rotx, roty, rotz
-import vispy.objects_lib as objects_lib
+from avispy.engine import Camera, Scene, Light, Display, Primitive, Object_model, rotx, roty, rotz
+import avispy.objects_lib as objects_lib
 
 xyz_inc=0.1
 rot_inc=1*pi/180.0
@@ -84,7 +84,7 @@ bar=objects_lib.Bar()
 bar.set_length(3)
 bar.set_sides(0.1,0.1)
 bar.set_pos(array([3.,0.,0.]))
-#scene.add_object(bar)
+scene.add_object(bar)
 
 curve=objects_lib.Curve()
 curve2=objects_lib.Curve()
@@ -99,57 +99,15 @@ plot.add_curve(curve)
 #plot.add_curve(curve2)
 plot.set_pos(array([0.2,0.,0.]))
 plot.scale=[4.,4.,1.0]
-#scene.add_object(plot)
+scene.add_object(plot)
 
 
 import PyKDL as kdl
-import robot_desc_example as robot_desc
+segment=kdl.Segment(kdl.Joint(kdl.Joint.RotX),kdl.Frame())
+segment=objects_lib.Segment(segment)
+segment.set_pos(array([-3.,0.,0.]))
+scene.add_object(segment)
 
-articulated_right=objects_lib.Articulated(scene)
-articulated_right2=objects_lib.Articulated(scene)
-articulated_left=objects_lib.Articulated(scene)
-articulated_left2=objects_lib.Articulated(scene)
-
-for segment in robot_desc.arm_segments_right:
-    gl_segment=objects_lib.Segment(segment)
-    articulated_right.add_segment(gl_segment)
-    gl_segment=objects_lib.Segment(segment)
-    articulated_right2.add_segment(gl_segment)
-
-for segment in robot_desc.arm_segments_left:
-    gl_segment=objects_lib.Segment(segment)
-    articulated_left.add_segment(gl_segment)
-    gl_segment=objects_lib.Segment(segment)
-    articulated_left2.add_segment(gl_segment)
-
-tree=objects_lib.Articulated_tree()
-tree.add_articulated(articulated_left,0)
-right_id=tree.add_articulated(articulated_right,0)
-tree.add_articulated(articulated_right2,right_id)
-tree.add_articulated(articulated_left2,right_id)
-robot_base=identity(4)
-robot_base[:3][:,3]=array([3.,0.,0.])
-print "Robot_base", robot_base
-tree.trans_rot_matrix=robot_base
-tree.update_transformations()
-
-# segment=kdl.Segment(kdl.Joint(kdl.Joint.None),kdl.Frame(kdl.Rotation.RotX(0*pi/180.0),kdl.Vector(1,0.,5)))
-# segment=objects_lib.Segment(segment)
-# #segment.set_pos(array([-3.,0.,0.]))
-# #scene.add_object(segment)
-# articulated.add_segment(segment)
-
-# segment=kdl.Segment(kdl.Joint(kdl.Joint.RotX),kdl.Frame(kdl.Rotation.RotX(0*pi/180.0),kdl.Vector(1,0,0)))
-# segment=objects_lib.Segment(segment)
-# #segment.set_pos(array([-3.,0.,0.]))
-# #scene.add_object(segment)
-# articulated.add_segment(segment)
-
-# segment=kdl.Segment(kdl.Joint(kdl.Joint.RotY),kdl.Frame(kdl.Rotation.RotX(0*pi/180.0),kdl.Vector(0,0,-1)))
-# segment=objects_lib.Segment(segment)
-# #segment.set_pos(array([-3.,0.,0.]))
-# #scene.add_object(segment)
-# articulated.add_segment(segment)
 
 camera_center=objects_lib.Disk()
 camera_center.set_color(array([0.5,0.5,0.5]))
@@ -196,10 +154,6 @@ while True:
         counter2=-1.0
     curve.add_point(array([counter,counter2,0.0]))
     curve2.add_point(array([counter,sin(counter),0.0]))
-    articulated_right.set_angles([counter]*9)
-    articulated_left.set_angles([counter-pi]*9)
-    articulated_left2.set_angles([counter-pi]*9)
-    tree.update_transformations()
     bar.set_length(sin(counter))
     display.update()
     camera_center.visibility=False

@@ -4,8 +4,8 @@ import OpenGL.GL as gl
 
 import sys, pygame
 from numpy import array, identity, cos , sin, dot, invert, pi
-from vispy.engine import Camera, Scene, Light, Display, Primitive, Object_model, rotx, roty, rotz
-import vispy.objects_lib as objects_lib
+from avispy.engine import Camera, Scene, Light, Display, Primitive, Object_model, rotx, roty, rotz
+import avispy.objects_lib as objects_lib
 
 xyz_inc=0.1
 rot_inc=1*pi/180.0
