@@ -1,4 +1,4 @@
-
+#!/usr/bin/python
 import OpenGL.GL as _gl
 import OpenGL.GLU as _glu
 import time, os
