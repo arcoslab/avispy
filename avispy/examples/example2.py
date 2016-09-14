@@ -122,7 +122,7 @@ scene.add_object(camera_center)
 counter=0.0
 counter2=-1.0
 
-from math import sin
+
 
 from numpy.linalg import inv
 
@@ -156,6 +156,6 @@ while True:
     curve2.add_point(array([counter,sin(counter),0.0]))
     bar.set_length(sin(counter))
     display.update()
-    camera_center.visibility=False
+    camera_center.visibility=True
 
     

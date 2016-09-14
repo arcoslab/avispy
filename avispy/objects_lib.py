@@ -319,11 +319,13 @@ class Plot(_engine.Object_model):
 
     def set_y_div(self,y_div):
         self.y_div=y_div
-        curve.scale=[self.grid.length/(self.x_div*self.grid.length_div),self.grid.height/(self.y_div*self.grid.height_div),1.]
+        for curve in self.curves:
+            curve.scale=[self.grid.length/(self.x_div*self.grid.length_div),self.grid.height/(self.y_div*self.grid.height_div),1.]
 
     def set_x_div(self,x_div):
         self.x_div=x_div
-        curve.scale=[self.grid.length/(self.x_div*self.grid.length_div),self.grid.height/(self.y_div*self.grid.height_div),1.]
+        for curve in self.curves:
+            curve.scale=[self.grid.length/(self.x_div*self.grid.length_div),self.grid.height/(self.y_div*self.grid.height_div),1.]
 
     def add_curve(self,curve):
         curve.scale=[self.grid.length/(self.x_div*self.grid.length_div),self.grid.height/(self.y_div*self.grid.height_div),1.]
