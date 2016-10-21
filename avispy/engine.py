@@ -512,9 +512,11 @@ class Camera(object):
                 self.camera_matrix.change_center(_n.array([self.xyz_inc*event.rel[0],-self.xyz_inc*event.rel[1],0.]))
             return()
         if event.type == _pygame.MOUSEBUTTONDOWN:
-            self.buttons[event.button-1]=True
+            if event.button <= 5:
+                self.buttons[event.button-1]=True
         elif event.type == _pygame.MOUSEBUTTONUP:
-            self.buttons[event.button-1]=False
+            if event.button <= 5:
+                self.buttons[event.button-1]=False
         else:
             return()
         if self.buttons[0] and not self.buttons[2] and self.buttons[3]:
