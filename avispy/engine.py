@@ -127,7 +127,7 @@ class Object_model(object):
         self.visibility=visibility
 
     def set_trans_rot_matrix(self,matrix):
-        self.trans_rot_m=matrix
+        self.trans_rot_matrix=matrix
 
     def set_center_offset_matrix(self,matrix):
         self.center_offset_matrix=matrix
