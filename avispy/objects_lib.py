@@ -504,3 +504,160 @@ class Articulated_tree(object):
                     parent_frame=self.articulates[parent].last_trans_rot
                 self.articulates[child].set_base_frame(parent_frame)
                 self.articulates[child].update_transformations()
+
+### Framed objects
+
+class Framed_face(_engine.Object_model):
+    def __init__(self, width=0.1, height=0.1, step=0.02, angular_step=_n.pi/6):
+        _engine.Object_model.__init__(self)
+        self.list_of_frames=[]
+        self.step=step
+        self.angular_step=angular_step
+        self.x_start=-width/2.0
+        self.x_end=width/2.0
+        self.y_start=-height/2.0
+        self.y_end=height/2.0
+        self.width=width
+        self.height=height
+        self.scale=[1.0,1.0,1.0]
+        self.generate_frames()
+
+    def generate_frames(self):
+        x_sample_cant=int(self.width/self.step)
+        y_sample_cant=int(self.height/self.step)
+        theta_sample_cant=int(2*_n.pi/self.angular_step)
+        x=self.x_start
+        y=self.y_start
+        theta=0
+
+        for i in xrange(x_sample_cant+1):
+            y=self.y_start
+            theta=0
+            for j in xrange(y_sample_cant+1):
+                theta=0
+                for k in xrange(theta_sample_cant+1):
+                    pose_matrix=_n.identity(4)
+                    pose_matrix[:3,:3]=_engine.rotz(theta)
+                    pose_matrix[:3,3]=_n.array([x,y,0])
+                    new_frame=Frame()
+                    new_frame.scale=[0.01,0.01,0.01]
+                    new_frame.set_trans_rot_matrix(pose_matrix)
+                    self.add_object_model(new_frame)
+                    theta+=self.angular_step
+                y+=self.step
+            x+=self.step
+        
+
+        
+class Framed_sphere(_engine.Object_model):
+    def __init__(self, radius=0.1, step=_n.pi/6, start=0, end=2*_n.pi):
+        _engine.Object_model.__init__(self)
+        self.list_of_frames=[]
+        self.step=step
+        self.start=start
+        self.end=end
+        self.radius=radius
+        self.position=self.trans_rot_matrix[:3,3]
+        self.generate_frames()
+        self.scale=[1.0,1.0,1.0]
+
+    def generate_frames(self):
+        #this will generate the angles
+        #the following are the angles (like in polar coordinates)
+        phi=0   #from 0 to pi/2
+        theta=0 #from 0 to pi
+        psi=0 # from 0 to 2pi but half resolution
+        phi_sample_cant=int((self.end-self.start)/self.step)
+        theta_sample_cant=int(_n.pi/self.step)
+        psi_sample_cant=int(_n.pi/self.step)
+        pose_matrix=_n.identity(4)
+        rel_pos_ini=_n.array([0.0,0.0,1.0]) #relative pose
+    
+        self.list_of_poses=[]
+        for i in xrange(phi_sample_cant+1):
+            theta=0
+            psi=0
+            for j in xrange(theta_sample_cant+1):
+                psi=0
+                for k in xrange(psi_sample_cant):
+                    #this will iterate over the angles, now generate the poses.
+                    #generate orientation part
+                    rot_matrix=_n.dot(_n.dot(_engine.rotx(phi-_n.pi/2), _engine.roty(theta-_n.pi/2)), _engine.rotz(psi))
+                    rel_pos=_n.dot(rot_matrix, rel_pos_ini)
+                    pos=self.position-self.radius*rel_pos
+                    pose_matrix=_n.identity(4)
+                    pose_matrix[:3,:3]=rot_matrix
+                    pose_matrix[:3,3]=pos
+                    new_frame=Frame()
+                    new_frame.scale=[.01,.01,.01]
+                    new_frame.set_trans_rot_matrix(pose_matrix)
+                    self.add_object_model(new_frame)
+                    #self.list_of_frames.append(new_frame) 
+                    psi+=self.step;
+                theta+=self.step;
+            phi+=self.step;
+
+class Framed_box(_engine.Object_model):
+    def __init__(self, width=0.2, height=0.1, depth=0.3, step=0.04, angle_step=_n.pi/6):
+        _engine.Object_model.__init__(self)
+        self.step=step
+        self.angle_step=angle_step
+        self.x_length=width
+        self.y_length=height
+        self.z_length=depth
+
+        #create pose matrices
+        xy_top_pose=_n.identity(4)
+        xy_bottom_pose=_n.identity(4)
+        
+        xz_right_pose=_n.identity(4)
+        xz_left_pose=_n.identity(4)
+        
+        yz_front_pose=_n.identity(4)
+        yz_back_pose=_n.identity(4)
+
+        #orientation
+        xy_bottom_pose[:3,:3]=_engine.rotx(_n.pi)
+        
+        xz_right_pose[:3,:3]=_engine.rotx(-_n.pi/2)
+        xz_left_pose[:3,:3]=_engine.rotx(_n.pi/2)
+
+        yz_front_pose[:3,:3]=_engine.roty(_n.pi/2)
+        yz_back_pose[:3,:3]=_engine.roty(-_n.pi/2)
+
+        #position
+        xy_top_pose[:3,3]=_n.array([0,0,self.z_length/2])
+        xy_bottom_pose[:3,3]=_n.array([0,0,-self.z_length/2])
+        
+        xz_right_pose[:3,3]=_n.array([0,self.y_length/2,0])
+        xz_left_pose[:3,3]=_n.array([0,-self.y_length/2,0])
+        
+        yz_front_pose[:3,3]=_n.array([self.x_length/2,0,0])
+        yz_back_pose[:3,3]=_n.array([-self.x_length/2,0,0])
+
+        #visualization
+        xy_top_face=Framed_face(self.x_length, self.y_length, self.step, self.angle_step)
+        xy_bottom_face=Framed_face(self.x_length, self.y_length, self.step, self.angle_step)
+        
+        xz_right_face=Framed_face(self.x_length, self.z_length, self.step, self.angle_step)
+        xz_left_face=Framed_face(self.x_length, self.z_length, self.step, self.angle_step)
+        
+        yz_front_face=Framed_face(self.z_length, self.y_length, self.step, self.angle_step)
+        yz_back_face=Framed_face(self.z_length, self.y_length, self.step, self.angle_step)
+
+
+        xy_top_face.set_trans_rot_matrix(xy_top_pose)
+        xy_bottom_face.set_trans_rot_matrix(xy_bottom_pose)
+        
+        xz_right_face.set_trans_rot_matrix(xz_right_pose)
+        xz_left_face.set_trans_rot_matrix(xz_left_pose)
+        
+        yz_front_face.set_trans_rot_matrix(yz_front_pose)
+        yz_back_face.set_trans_rot_matrix(yz_back_pose)
+
+        self.add_object_model(xy_top_face)
+        self.add_object_model(xy_bottom_face)
+        self.add_object_model(xz_right_face)
+        self.add_object_model(xz_left_face)
+        self.add_object_model(yz_front_face)
+        self.add_object_model(yz_back_face)
