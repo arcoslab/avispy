@@ -5,6 +5,7 @@ import numpy.linalg as _ln
 from  numpy.random import random as _random
 import OpenGL.GL as _gl 
 import OpenGL.GLU as _glu
+from scipy.spatial import ConvexHull
 
 
 def gen_circle(radius, angle_step, z_pos):
@@ -18,6 +19,13 @@ def gen_cylinder(radius,height,angle_step=10.0*_n.pi/180.0):
     vertices_base=gen_circle(radius, angle_step, 0)
     vertices_top=gen_circle(radius, angle_step, height)
     return(vertices_base,vertices_top)
+
+def gen_convex_hull_faces(list_of_points):
+    #gets a list of 3d points and returns a list of faces of the convex hull
+    list_of_arrays=map(_n.array, list_of_points)
+    hull=ConvexHull(list_of_arrays)
+    return list(hull.points[hull.simplices])
+    
 
 class Disk(_engine.Object_model):
     def __init__(self, radius=1.0, angle_step=10.0*_n.pi/180.0):
@@ -661,3 +669,24 @@ class Framed_box(_engine.Object_model):
         self.add_object_model(xz_left_face)
         self.add_object_model(yz_front_face)
         self.add_object_model(yz_back_face)
+
+        
+class Convex_hull(_engine.Object_model):
+    def __init__(self, list_of_points):
+        _engine.Object_model.__init__(self)
+        self.faces=gen_convex_hull_faces(list_of_points)
+        for face in self.faces:
+            normal=_n.cross(-face[0,:3]+face[1,:3], -face[0,:3]+face[2:3])
+            prim=_engine.Primitive()
+            prim.type=_gl.GL_TRIANGLES
+            prim.vertices=face
+            prim.normals=_n.identity(3)
+            prim.normals[0,:3]=normal
+            prim.normals[1,:3]=normal
+            prim.normals[2,:3]=normal
+            self.add_primitive(prim)
+            
+            
+
+        
+        
