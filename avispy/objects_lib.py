@@ -87,6 +87,9 @@ class Cone(_engine.Object_model):
         self.add_primitive(self.side_surface_prim)
         self.add_primitive(self.base_cap_prim)
 
+    def set_scale(self, scale):
+        self.scale=scale
+
 class Cylinder(_engine.Object_model):
     def __init__(self, radius=1.0, height=1.0, angle_step=10.0*_n.pi/180.0):
         self.height=height
@@ -121,6 +124,9 @@ class Cylinder(_engine.Object_model):
         self.add_primitive(self.base_cap_prim)
         self.add_primitive(self.top_cap_prim)
         self.scale=[1.]*3
+
+    def set_scale(self, scale):
+        self.scale=scale
 
 
         
@@ -183,6 +189,9 @@ class Sphere(_engine.Object_model):
     def set_radius(self,radius):
         self.scale[0]=self.scale[1]=self.scale[2]=radius
 
+    def set_scale(self, scale):
+        self.scale=scale
+
 class Bar(_engine.Object_model):
     def __init__(self,side1=1.0,side2=1.0, height=1.0):
         _engine.Object_model.__init__(self)
@@ -242,6 +251,9 @@ class Bar(_engine.Object_model):
     def set_sides(self,side1,side2):
         self.scale[0]=side1
         self.scale[1]=side2
+
+    def set_scale(self, scale):
+        self.scale=scale
 
 class Line(_engine.Object_model):
     def __init__(self,point1,point2):
@@ -363,18 +375,24 @@ class Joint(Cylinder):
 class Frame(_engine.Object_model):
     def __init__(self):
         _engine.Object_model.__init__(self)
-        x_arrow=Arrow()
-        y_arrow=Arrow()
-        z_arrow=Arrow()
-        x_arrow.set_color(_engine.Colors.red)
-        x_arrow.set_axis(_n.array([1.,0,0]))
-        y_arrow.set_color(_engine.Colors.green)
-        y_arrow.set_axis(_n.array([0.,1.0,0]))
-        z_arrow.set_color(_engine.Colors.blue)
-        #z_arrow.set_axis(_n.array([0.,0,1.0]))
-        self.add_object_model(x_arrow)
-        self.add_object_model(y_arrow)
-        self.add_object_model(z_arrow)
+        self.x_arrow=Arrow()
+        self.y_arrow=Arrow()
+        self.z_arrow=Arrow()
+        self.x_arrow.set_color(_engine.Colors.red)
+        self.x_arrow.set_axis(_n.array([1.,0,0]))
+        self.y_arrow.set_color(_engine.Colors.green)
+        self.y_arrow.set_axis(_n.array([0.,1.0,0]))
+        self.z_arrow.set_color(_engine.Colors.blue)
+        
+        self.add_object_model(self.x_arrow)
+        self.add_object_model(self.y_arrow)
+        self.add_object_model(self.z_arrow)
+
+    def set_scale(self, scale):
+        #scale is a 3x1 array
+        self.x_arrow.set_length(scale[0])
+        self.y_arrow.set_length(scale[1])
+        self.z_arrow.set_length(scale[2])
 
 class Segment(_engine.Object_model):
     def __init__(self,kdl_segment):
@@ -689,6 +707,9 @@ class Convex_hull(_engine.Object_model):
             prim.normals[2,:3]=normal
             self.add_primitive(prim)
 
+    def set_scale(self, scale):
+        self.scale=scale
+
 
 class Point_set_surface(_engine.Object_model):
     def __init__(self, list_of_points):
@@ -698,27 +719,34 @@ class Point_set_surface(_engine.Object_model):
 class Directed_cylinder(_engine.Object_model):
     def __init__(self, radius=1.0, height=1.0, angle_step=10.0*_n.pi/180.):
         _engine.Object_model.__init__(self)
-        cylinder=Cylinder(radius=radius,height=height)
-        frame=Frame()
+        self.cylinder=Cylinder(radius=radius,height=height)
+        self.frame=Frame()
         
         frame_pose=_n.identity(4)
         frame_pose[2,3]=height*1.2
-        frame.set_trans_rot_matrix(frame_pose)
-        self.add_object_model(cylinder)
-        self.add_object_model(frame)
+        self.frame.set_trans_rot_matrix(frame_pose)
+        self.add_object_model(self.cylinder)
+        self.add_object_model(self.frame)
+    def set_scale(self, scale):
+        self.cylinder.set_scale(scale)
+        self.frame.set_scale(scale)
 
 class Directed_bar(_engine.Object_model):
     def __init__(self, side1=1.0,side2=1.0, height=1.0):
         _engine.Object_model.__init__(self)
-        box=Bar(side1=side1, side2=side2, height=height)
-        frame=Frame()
+        self.box=Bar(side1=side1, side2=side2, height=height)
+        self.frame=Frame()
         
         frame_pose=_n.identity(4)
         frame_pose[2,3]=height*1.2
-        frame.set_trans_rot_matrix(frame_pose)
-        self.add_object_model(box)
-        self.add_object_model(frame)
-        
+        self.frame.set_trans_rot_matrix(frame_pose)
+        self.add_object_model(self.box)
+        self.add_object_model(self.frame)
+
+
+    def set_scale(self, scale):
+        self.box.set_scale(scale)
+        self.frame.set_scale(scale)
             
 
         
