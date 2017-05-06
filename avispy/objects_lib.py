@@ -716,6 +716,7 @@ class Point_set_surface(_engine.Object_model):
         _engine.Object_model.__init__(self)
 
 
+
 class Directed_cylinder(_engine.Object_model):
     def __init__(self, radius=1.0, height=1.0, angle_step=10.0*_n.pi/180.):
         _engine.Object_model.__init__(self)
@@ -739,6 +740,7 @@ class Directed_bar(_engine.Object_model):
         
         frame_pose=_n.identity(4)
         frame_pose[2,3]=height*1.2
+
         self.frame.set_trans_rot_matrix(frame_pose)
         self.add_object_model(self.box)
         self.add_object_model(self.frame)
@@ -747,7 +749,6 @@ class Directed_bar(_engine.Object_model):
     def set_scale(self, scale):
         self.box.set_scale(scale)
         self.frame.set_scale(scale)
-            
 
         
         
