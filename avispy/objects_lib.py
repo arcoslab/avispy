@@ -685,7 +685,12 @@ class Convex_hull(_engine.Object_model):
             prim.normals[1,:3]=normal
             prim.normals[2,:3]=normal
             self.add_primitive(prim)
-            
+
+
+class Point_set_surface(_engine.Object_model):
+    def __init__(self, list_of_points):
+        _engine.Object_model.__init__(self)
+        
             
 
         
