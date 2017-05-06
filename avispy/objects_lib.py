@@ -122,6 +122,9 @@ class Cylinder(_engine.Object_model):
         self.add_primitive(self.top_cap_prim)
         self.scale=[1.]*3
 
+
+        
+
 def calc_perpendicular_to_normal2(random_vector,normal):
     '''Calculates a perpendicular point to a normal'''
     #all this vectors are with respect to the origin (they are not rays)
@@ -690,6 +693,33 @@ class Convex_hull(_engine.Object_model):
 class Point_set_surface(_engine.Object_model):
     def __init__(self, list_of_points):
         _engine.Object_model.__init__(self)
+
+
+
+class Directed_cylinder(_engine.Object_model):
+    def __init__(self, radius=1.0, height=1.0, angle_step=10.0*_n.pi/180.):
+        _engine.Object_model.__init__(self)
+        cylinder=Cylinder(radius=radius,height=height)
+        frame=Frame()
+        
+        frame_pose=_n.identity(4)
+        frame_pose[2,3]=height*1.2
+        frame.set_trans_rot_matrix(frame_pose)
+        self.add_object_model(cylinder)
+        self.add_object_model(frame)
+
+class Directed_bar(_engine.Object_model):
+    def __init__(self, side1=1.0,side2=1.0, height=1.0):
+        _engine.Object_model.__init__(self)
+        box=Bar(side1=side1, side2=side2, height=height)
+        frame=Frame()
+        
+        frame_pose=_n.identity(4)
+        frame_pose[2,3]=height*1.2
+        frame.set_trans_rot_matrix(frame_pose)
+        self.add_object_model(box)
+        self.add_object_model(frame)
+
         
             
 
