@@ -5,6 +5,7 @@ import numpy.linalg as _ln
 from  numpy.random import random as _random
 import OpenGL.GL as _gl 
 import OpenGL.GLU as _glu
+from scipy.spatial import ConvexHull
 
 
 def gen_circle(radius, angle_step, z_pos):
@@ -18,6 +19,13 @@ def gen_cylinder(radius,height,angle_step=10.0*_n.pi/180.0):
     vertices_base=gen_circle(radius, angle_step, 0)
     vertices_top=gen_circle(radius, angle_step, height)
     return(vertices_base,vertices_top)
+
+def gen_convex_hull_faces(list_of_points):
+    #gets a list of 3d points and returns a list of faces of the convex hull
+    list_of_arrays=map(_n.array, list_of_points)
+    hull=ConvexHull(list_of_arrays)
+    return list(hull.points[hull.simplices])
+    
 
 class Disk(_engine.Object_model):
     def __init__(self, radius=1.0, angle_step=10.0*_n.pi/180.0):
@@ -79,6 +87,9 @@ class Cone(_engine.Object_model):
         self.add_primitive(self.side_surface_prim)
         self.add_primitive(self.base_cap_prim)
 
+    def set_scale(self, scale):
+        self.scale=scale
+
 class Cylinder(_engine.Object_model):
     def __init__(self, radius=1.0, height=1.0, angle_step=10.0*_n.pi/180.0):
         self.height=height
@@ -113,6 +124,12 @@ class Cylinder(_engine.Object_model):
         self.add_primitive(self.base_cap_prim)
         self.add_primitive(self.top_cap_prim)
         self.scale=[1.]*3
+
+    def set_scale(self, scale):
+        self.scale=scale
+
+
+        
 
 def calc_perpendicular_to_normal2(random_vector,normal):
     '''Calculates a perpendicular point to a normal'''
@@ -171,6 +188,9 @@ class Sphere(_engine.Object_model):
 
     def set_radius(self,radius):
         self.scale[0]=self.scale[1]=self.scale[2]=radius
+
+    def set_scale(self, scale):
+        self.scale=scale
 
 class Bar(_engine.Object_model):
     def __init__(self,side1=1.0,side2=1.0, height=1.0):
@@ -231,6 +251,9 @@ class Bar(_engine.Object_model):
     def set_sides(self,side1,side2):
         self.scale[0]=side1
         self.scale[1]=side2
+
+    def set_scale(self, scale):
+        self.scale=scale
 
 class Line(_engine.Object_model):
     def __init__(self,point1,point2):
@@ -352,18 +375,24 @@ class Joint(Cylinder):
 class Frame(_engine.Object_model):
     def __init__(self):
         _engine.Object_model.__init__(self)
-        x_arrow=Arrow()
-        y_arrow=Arrow()
-        z_arrow=Arrow()
-        x_arrow.set_color(_engine.Colors.red)
-        x_arrow.set_axis(_n.array([1.,0,0]))
-        y_arrow.set_color(_engine.Colors.green)
-        y_arrow.set_axis(_n.array([0.,1.0,0]))
-        z_arrow.set_color(_engine.Colors.blue)
-        #z_arrow.set_axis(_n.array([0.,0,1.0]))
-        self.add_object_model(x_arrow)
-        self.add_object_model(y_arrow)
-        self.add_object_model(z_arrow)
+        self.x_arrow=Arrow()
+        self.y_arrow=Arrow()
+        self.z_arrow=Arrow()
+        self.x_arrow.set_color(_engine.Colors.red)
+        self.x_arrow.set_axis(_n.array([1.,0,0]))
+        self.y_arrow.set_color(_engine.Colors.green)
+        self.y_arrow.set_axis(_n.array([0.,1.0,0]))
+        self.z_arrow.set_color(_engine.Colors.blue)
+        
+        self.add_object_model(self.x_arrow)
+        self.add_object_model(self.y_arrow)
+        self.add_object_model(self.z_arrow)
+
+    def set_scale(self, scale):
+        #scale is a 3x1 array
+        self.x_arrow.set_length(scale[0])
+        self.y_arrow.set_length(scale[1])
+        self.z_arrow.set_length(scale[2])
 
 class Segment(_engine.Object_model):
     def __init__(self,kdl_segment):
@@ -525,3 +554,222 @@ class Articulated_tree(object):
                     parent_frame=self.articulates[parent].last_trans_rot
                 self.articulates[child].set_base_frame(parent_frame)
                 self.articulates[child].update_transformations()
+
+### Framed objects
+
+class Framed_face(_engine.Object_model):
+    def __init__(self, width=0.1, height=0.1, step=0.02, angular_step=_n.pi/6):
+        _engine.Object_model.__init__(self)
+        self.list_of_frames=[]
+        self.step=step
+        self.angular_step=angular_step
+        self.x_start=-width/2.0
+        self.x_end=width/2.0
+        self.y_start=-height/2.0
+        self.y_end=height/2.0
+        self.width=width
+        self.height=height
+        self.scale=[1.0,1.0,1.0]
+        self.generate_frames()
+
+    def generate_frames(self):
+        x_sample_cant=int(self.width/self.step)
+        y_sample_cant=int(self.height/self.step)
+        theta_sample_cant=int(2*_n.pi/self.angular_step)
+        x=self.x_start
+        y=self.y_start
+        theta=0
+
+        for i in xrange(x_sample_cant+1):
+            y=self.y_start
+            theta=0
+            for j in xrange(y_sample_cant+1):
+                theta=0
+                for k in xrange(theta_sample_cant+1):
+                    pose_matrix=_n.identity(4)
+                    pose_matrix[:3,:3]=_engine.rotz(theta)
+                    pose_matrix[:3,3]=_n.array([x,y,0])
+                    new_frame=Frame()
+                    new_frame.scale=[0.01,0.01,0.01]
+                    new_frame.set_trans_rot_matrix(pose_matrix)
+                    self.add_object_model(new_frame)
+                    theta+=self.angular_step
+                y+=self.step
+            x+=self.step
+        
+
+        
+class Framed_sphere(_engine.Object_model):
+    def __init__(self, radius=0.1, step=_n.pi/6, start=0, end=2*_n.pi):
+        _engine.Object_model.__init__(self)
+        self.list_of_frames=[]
+        self.step=step
+        self.start=start
+        self.end=end
+        self.radius=radius
+        self.position=self.trans_rot_matrix[:3,3]
+        self.generate_frames()
+        self.scale=[1.0,1.0,1.0]
+
+    def generate_frames(self):
+        #this will generate the angles
+        #the following are the angles (like in polar coordinates)
+        phi=0   #from 0 to pi/2
+        theta=0 #from 0 to pi
+        psi=0 # from 0 to 2pi but half resolution
+        phi_sample_cant=int((self.end-self.start)/self.step)
+        theta_sample_cant=int(_n.pi/self.step)
+        psi_sample_cant=int(_n.pi/self.step)
+        pose_matrix=_n.identity(4)
+        rel_pos_ini=_n.array([0.0,0.0,1.0]) #relative pose
+    
+        self.list_of_poses=[]
+        for i in xrange(phi_sample_cant+1):
+            theta=0
+            psi=0
+            for j in xrange(theta_sample_cant+1):
+                psi=0
+                for k in xrange(psi_sample_cant):
+                    #this will iterate over the angles, now generate the poses.
+                    #generate orientation part
+                    rot_matrix=_n.dot(_n.dot(_engine.rotx(phi-_n.pi/2), _engine.roty(theta-_n.pi/2)), _engine.rotz(psi))
+                    rel_pos=_n.dot(rot_matrix, rel_pos_ini)
+                    pos=self.position-self.radius*rel_pos
+                    pose_matrix=_n.identity(4)
+                    pose_matrix[:3,:3]=rot_matrix
+                    pose_matrix[:3,3]=pos
+                    new_frame=Frame()
+                    new_frame.scale=[.01,.01,.01]
+                    new_frame.set_trans_rot_matrix(pose_matrix)
+                    self.add_object_model(new_frame)
+                    #self.list_of_frames.append(new_frame) 
+                    psi+=self.step;
+                theta+=self.step;
+            phi+=self.step;
+
+class Framed_box(_engine.Object_model):
+    def __init__(self, width=0.2, height=0.1, depth=0.3, step=0.04, angle_step=_n.pi/6):
+        _engine.Object_model.__init__(self)
+        self.step=step
+        self.angle_step=angle_step
+        self.x_length=width
+        self.y_length=height
+        self.z_length=depth
+
+        #create pose matrices
+        xy_top_pose=_n.identity(4)
+        xy_bottom_pose=_n.identity(4)
+        
+        xz_right_pose=_n.identity(4)
+        xz_left_pose=_n.identity(4)
+        
+        yz_front_pose=_n.identity(4)
+        yz_back_pose=_n.identity(4)
+
+        #orientation
+        xy_bottom_pose[:3,:3]=_engine.rotx(_n.pi)
+        
+        xz_right_pose[:3,:3]=_engine.rotx(-_n.pi/2)
+        xz_left_pose[:3,:3]=_engine.rotx(_n.pi/2)
+
+        yz_front_pose[:3,:3]=_engine.roty(_n.pi/2)
+        yz_back_pose[:3,:3]=_engine.roty(-_n.pi/2)
+
+        #position
+        xy_top_pose[:3,3]=_n.array([0,0,self.z_length/2])
+        xy_bottom_pose[:3,3]=_n.array([0,0,-self.z_length/2])
+        
+        xz_right_pose[:3,3]=_n.array([0,self.y_length/2,0])
+        xz_left_pose[:3,3]=_n.array([0,-self.y_length/2,0])
+        
+        yz_front_pose[:3,3]=_n.array([self.x_length/2,0,0])
+        yz_back_pose[:3,3]=_n.array([-self.x_length/2,0,0])
+
+        #visualization
+        xy_top_face=Framed_face(self.x_length, self.y_length, self.step, self.angle_step)
+        xy_bottom_face=Framed_face(self.x_length, self.y_length, self.step, self.angle_step)
+        
+        xz_right_face=Framed_face(self.x_length, self.z_length, self.step, self.angle_step)
+        xz_left_face=Framed_face(self.x_length, self.z_length, self.step, self.angle_step)
+        
+        yz_front_face=Framed_face(self.z_length, self.y_length, self.step, self.angle_step)
+        yz_back_face=Framed_face(self.z_length, self.y_length, self.step, self.angle_step)
+
+
+        xy_top_face.set_trans_rot_matrix(xy_top_pose)
+        xy_bottom_face.set_trans_rot_matrix(xy_bottom_pose)
+        
+        xz_right_face.set_trans_rot_matrix(xz_right_pose)
+        xz_left_face.set_trans_rot_matrix(xz_left_pose)
+        
+        yz_front_face.set_trans_rot_matrix(yz_front_pose)
+        yz_back_face.set_trans_rot_matrix(yz_back_pose)
+
+        self.add_object_model(xy_top_face)
+        self.add_object_model(xy_bottom_face)
+        self.add_object_model(xz_right_face)
+        self.add_object_model(xz_left_face)
+        self.add_object_model(yz_front_face)
+        self.add_object_model(yz_back_face)
+
+        
+class Convex_hull(_engine.Object_model):
+    def __init__(self, list_of_points):
+        _engine.Object_model.__init__(self)
+        self.faces=gen_convex_hull_faces(list_of_points)
+        for face in self.faces:
+            normal=_n.cross(-face[0,:3]+face[1,:3], -face[0,:3]+face[2:3])
+            prim=_engine.Primitive()
+            prim.type=_gl.GL_TRIANGLES
+            prim.vertices=face
+            prim.normals=_n.identity(3)
+            prim.normals[0,:3]=normal
+            prim.normals[1,:3]=normal
+            prim.normals[2,:3]=normal
+            self.add_primitive(prim)
+
+    def set_scale(self, scale):
+        self.scale=scale
+
+
+class Point_set_surface(_engine.Object_model):
+    def __init__(self, list_of_points):
+        _engine.Object_model.__init__(self)
+
+
+
+class Directed_cylinder(_engine.Object_model):
+    def __init__(self, radius=1.0, height=1.0, angle_step=10.0*_n.pi/180.):
+        _engine.Object_model.__init__(self)
+        self.cylinder=Cylinder(radius=radius,height=height)
+        self.frame=Frame()
+        
+        frame_pose=_n.identity(4)
+        frame_pose[2,3]=height*1.2
+        self.frame.set_trans_rot_matrix(frame_pose)
+        self.add_object_model(self.cylinder)
+        self.add_object_model(self.frame)
+    def set_scale(self, scale):
+        self.cylinder.set_scale(scale)
+        self.frame.set_scale(scale)
+
+class Directed_bar(_engine.Object_model):
+    def __init__(self, side1=1.0,side2=1.0, height=1.0):
+        _engine.Object_model.__init__(self)
+        self.box=Bar(side1=side1, side2=side2, height=height)
+        self.frame=Frame()
+        
+        frame_pose=_n.identity(4)
+        frame_pose[2,3]=height*1.2
+
+        self.frame.set_trans_rot_matrix(frame_pose)
+        self.add_object_model(self.box)
+        self.add_object_model(self.frame)
+
+
+    def set_scale(self, scale):
+        self.box.set_scale(scale)
+        self.frame.set_scale(scale)
+
+        
+        
