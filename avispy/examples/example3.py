@@ -80,11 +80,11 @@ sphere.set_pos(array([2.,2.,2.]))
 sphere.set_color(array([1.0,1.,0.]))
 scene.add_object(sphere)
 
-bar=objects_lib.Bar()
-bar.set_length(3)
-bar.set_sides(0.1,0.1)
+bar=objects_lib.Directed_bar()
+bar.set_scale([1,1,3])
+#bar.set_sides(0.1,0.1)
 bar.set_pos(array([3.,0.,0.]))
-#scene.add_object(bar)
+scene.add_object(bar)
 
 curve=objects_lib.Curve()
 curve2=objects_lib.Curve()
@@ -169,8 +169,9 @@ while True:
     curve.add_point(array([counter,counter2,0.0]))
     curve2.add_point(array([counter,sin(counter),0.0]))
     articulated.set_angles([counter,counter,counter*2])
-    bar.set_length(sin(counter))
+    bar.set_scale([sin(counter), 1, 1])
+    print counter
     display.update()
-    camera_center.visibility=False
+    camera_center.visibility=True
 
     
