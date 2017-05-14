@@ -429,7 +429,7 @@ class Segment(_engine.Object_model):
                 self.cylinder.set_axis(_n.array([0.,0.,1.]))
             self.cylinder.center_offset_matrix=_n.identity(4)
             self.cylinder.center_offset_matrix[2,3]=-0.5
-            if self.joint_type=="TransY":
+            if self.joint_type=="TransY" or self.joint_type=="TransZ" or self.joint_type=="TransX":
                 self.cylinder.center_offset_matrix[2,3]=0.0
             self.cylinder_id=self.add_object_model(self.cylinder)
 
@@ -437,7 +437,7 @@ class Segment(_engine.Object_model):
         if self.joint_type!="None":
             self.cylinder.set_color(_n.array([0.,1.,0]))
             self.cylinder.set_color_reflex(_n.array([1.,1.,1.]),50.0)
-        if self.joint_type=="TransY":
+        if self.joint_type=="TransY" or self.joint_type=="TransZ" or self.joint_type=="TransX":
             self.cylinder.set_color(_n.array([0.,0.,1]))
             self.cylinder.set_color_reflex(_n.array([1.,1.,1.]),50.0)
         self.bar.set_color(_n.array([1.,0.,0]))
@@ -456,7 +456,7 @@ class Segment(_engine.Object_model):
 
     def set_angle(self,angle):
         self.joint_angle=angle
-        if self.joint_type=="TransY":
+        if self.joint_type=="TransY"  or self.joint_type=="TransZ" or self.joint_type=="TransX":
             print "TransY set angle!"
             self.link_trans[1]=angle
             self.bar.set_axis(self.link_trans)
@@ -519,6 +519,18 @@ class Articulated():
             if segment.joint_type=="TransY":
                 segment.link_trans_rot[1,3]=angle
                 segment.scale[1]=angle*26.0
+                segment.gen_gl_list()
+                segment.object_models[1].gen_gl_list()
+                segment.bar.gen_gl_list()
+            if segment.joint_type=="TransZ":
+                segment.link_trans_rot[2,3]=angle
+                segment.scale[2]=angle*26.0
+                segment.gen_gl_list()
+                segment.object_models[1].gen_gl_list()
+                segment.bar.gen_gl_list()
+            if segment.joint_type=="TransX":
+                segment.link_trans_rot[0,3]=angle
+                segment.scale[0]=angle*26.0
                 segment.gen_gl_list()
                 segment.object_models[1].gen_gl_list()
                 segment.bar.gen_gl_list()
