@@ -90,6 +90,64 @@ class Cone(_engine.Object_model):
     def set_scale(self, scale):
         self.scale=scale
 
+class Triangle_3D(_engine.Object_model):
+    def __init__(self, side=1.0, depth=1.0):
+        _engine.Object_model.__init__(self)
+        self.top_triangular_surface_prim=_engine.Primitive()
+        self.top_triangular_surface_prim.type=_gl.GL_TRIANGLES
+        i=-0.5
+        self.top_triangular_surface_prim.vertices=_n.array([
+                [-side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), i*depth],
+                [side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), i*depth],
+                [0.0, (side/2.0)/_n.sin(60*_n.pi/180.0), i*depth]])
+        self.top_triangular_surface_prim.normals=_n.array([0.0,0.0, -1.0])
+        self.add_primitive(self.top_triangular_surface_prim)
+        self.bottom_triangular_surface_prim=_engine.Primitive()
+        self.bottom_triangular_surface_prim.type=_gl.GL_TRIANGLES
+        i=0.5
+        self.bottom_triangular_surface_prim.vertices=_n.array([
+                [-side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), i*depth],
+                [side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), i*depth],
+                [0.0, (side/2.0)/_n.sin(60*_n.pi/180.0), i*depth]])
+        self.bottom_triangular_surface_prim.normals=_n.array([0.0,0.0, 1.0])
+        self.add_primitive(self.bottom_triangular_surface_prim)
+
+        self.side0_prim=_engine.Primitive()
+        self.side0_prim.type=_gl.GL_QUADS
+        self.side0_prim.vertices=_n.array([
+                [-side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), -depth/2.0],
+                [side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), -depth/2.0],
+                [side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), depth/2.0],
+                [-side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), depth/2.0]])
+        self.side0_prim.normals=_n.array([0.0,-1.0, 0.0])
+        self.add_primitive(self.side0_prim)
+
+        self.side1_prim=_engine.Primitive()
+        self.side1_prim.type=_gl.GL_QUADS
+        self.side1_prim.vertices=_n.array([
+                [side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), -depth/2.0],
+                [0.0, (side/2.0)/_n.sin(60*_n.pi/180.0), -depth/2.0],
+                [0.0, (side/2.0)/_n.sin(60*_n.pi/180.0), depth/2.0],
+                [side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), depth/2.0]])
+        self.side1_prim.normals=_n.array([_n.sin(30*_n.pi/180.0),_n.cos(30*_n.pi/180.0), 0.0])
+        self.add_primitive(self.side1_prim)
+
+        self.side2_prim=_engine.Primitive()
+        self.side2_prim.type=_gl.GL_QUADS
+        self.side2_prim.vertices=_n.array([
+                [-side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), -depth/2.0],
+                [0.0, (side/2.0)/_n.sin(60*_n.pi/180.0), -depth/2.0],
+                [0.0, (side/2.0)/_n.sin(60*_n.pi/180.0), depth/2.0],
+                [-side/2.0, -(side/2.0)/_n.tan(60*_n.pi/180.0), depth/2.0]])
+        self.side2_prim.normals=_n.array([-_n.sin(30*_n.pi/180.0),_n.cos(30*_n.pi/180.0), 0.0])
+        self.add_primitive(self.side2_prim)
+
+        self.scale=[1.0]*3
+
+    def set_scale(self, scale):
+        self.scale=scale
+
+
 class Cylinder(_engine.Object_model):
     def __init__(self, radius=1.0, height=1.0, angle_step=10.0*_n.pi/180.0):
         self.height=height
